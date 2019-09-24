@@ -53,7 +53,7 @@ def sync_view(conn_config, stream, state, desired_columns):
       singer.write_message(activate_version_message)
 
    with metrics.record_counter(None) as counter:
-      select_sql      = 'SELECT {} FROM {}.{}'.format(','.join(escaped_columns),
+      select_sql      = 'SELECT {} FROM "{}"."{}"'.format(','.join(escaped_columns),
                                                       escaped_schema,
                                                       escaped_table)
 
@@ -119,7 +119,7 @@ def sync_table(conn_config, stream, state, desired_columns):
       if ora_rowscn:
          LOGGER.info("Resuming Full Table replication %s from ORA_ROWSCN %s", nascent_stream_version, ora_rowscn)
          select_sql      = """SELECT {}, ORA_ROWSCN
-                                FROM {}.{}
+                                FROM "{}"."{}"
                                WHERE ORA_ROWSCN >= {}
                                ORDER BY ORA_ROWSCN ASC
                                 """.format(','.join(escaped_columns),
@@ -128,7 +128,7 @@ def sync_table(conn_config, stream, state, desired_columns):
                                            ora_rowscn)
       else:
          select_sql      = """SELECT {}, ORA_ROWSCN
-                                FROM {}.{}
+                                FROM "{}"."{}"
                                ORDER BY ORA_ROWSCN ASC""".format(','.join(escaped_columns),
                                                                     escaped_schema,
                                                                     escaped_table)

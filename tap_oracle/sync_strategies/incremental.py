@@ -64,7 +64,7 @@ def sync_table(conn_config, stream, state, desired_columns):
          casted_where_clause_arg = common.prepare_where_clause_arg(replication_key_value, replication_key_sql_datatype)
 
          select_sql      = """SELECT {}
-                                FROM {}.{}
+                                FROM "{}"."{}"
                                WHERE {} >= {}
                                ORDER BY {} ASC
                                 """.format(','.join(escaped_columns),
@@ -73,7 +73,7 @@ def sync_table(conn_config, stream, state, desired_columns):
                                            replication_key)
       else:
          select_sql      = """SELECT {}
-                                FROM {}.{}
+                                FROM "{}"."{}"
                                ORDER BY {} ASC
                                """.format(','.join(escaped_columns),
                                           escaped_schema, escaped_table,
