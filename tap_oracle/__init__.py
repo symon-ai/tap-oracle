@@ -282,16 +282,17 @@ def discover_columns(connection, table_info, filter_schemas):
                                    column_schemas,
                                    cols)
 
-      entry = CatalogEntry(
-         table=table_name,
-         stream=table_name,
-         metadata=metadata.to_list(md),
-         tap_stream_id=table_schema + '-' + table_name,
-         schema=schema)
-
+      entry = {
+         'table': table_name,
+         'stream': table_name,
+         'metadata': metadata.to_list(md),
+         'tap_stream_id': table_schema + '-' + table_name,
+         'schema': schema,
+         'order': [str(column) for column in column_schemas]
+      }
       entries.append(entry)
 
-   return Catalog(entries)
+   return {'streams': entries}
 
 def dump_catalog(catalog):
    catalog.dump()
@@ -344,7 +345,7 @@ def do_discovery(conn_config, filter_schemas):
      }
 
    catalog = discover_columns(connection, table_info, filter_schemas)
-   dump_catalog(catalog)
+   json.dump(catalog, sys.stdout, indent=2)
    cur.close()
    connection.close()
    return catalog
@@ -396,6 +397,15 @@ def sync_method_for_streams(streams, state, default_replication_method):
    logical_streams = []
 
    for stream in streams:
+      old_properties = stream.schema.properties
+
+      # Sort the properties
+      new_properties = {}
+      for column in stream.order:
+         new_properties[column] = old_properties[column]
+
+      stream.schema.properties = new_properties
+
       stream_metadata = metadata.to_map(stream.metadata)
       replication_method = stream_metadata.get((), {}).get('replication-method', default_replication_method)
       replication_key = stream_metadata.get((), {}).get('replication-key')
@@ -552,8 +562,23 @@ def main_impl():
          filter_schemas = args.config.get('filter_schemas').split(',')
       do_discovery(conn_config, filter_schemas)
 
-   elif args.catalog:
+   elif args.properties:
       state = args.state
+
+      # Sort the properties
+      streams = args.properties['streams']
+      for stream in streams:
+            new_properties = {}
+            old_properties = stream['schema']['properties']
+            order = stream['order']
+
+            for column in order:
+               new_properties[column] = old_properties[column]
+
+            stream['schema']['properties'] = new_properties
+
+      args.catalog = Catalog.from_dict(args.properties)
+      
       do_sync(conn_config, args.catalog, args.config.get('default_replication_method'), state)
    else:
       LOGGER.info("No properties were selected")
