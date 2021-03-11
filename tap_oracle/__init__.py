@@ -288,7 +288,7 @@ def discover_columns(connection, table_info, filter_schemas):
          'metadata': metadata.to_list(md),
          'tap_stream_id': table_schema + '-' + table_name,
          'schema': schema,
-         'order': [str(column) for column in column_schemas]
+         'column_order': [str(column) for column in column_schemas]
       }
       entries.append(entry)
 
@@ -570,7 +570,7 @@ def main_impl():
       for stream in streams:
             new_properties = {}
             old_properties = stream['schema']['properties']
-            order = stream['order']
+            order = stream['column_order']
 
             for column in order:
                new_properties[column] = old_properties[column]
