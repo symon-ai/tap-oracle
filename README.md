@@ -29,3 +29,23 @@ archive/redo log files are automatically deleted.
 ---
 
 Copyright &copy; 2018 Stitch
+
+## Install the tap
+
+```
+> pip install tap-oracle
+```
+
+## Create a Config file
+
+## Run Discovery
+
+```
+> tap-oracle --config config.json --discover > properties.json
+```
+
+## Sync Data
+
+```
+> tap-oracle --config config.json --properties properties.json
+```
