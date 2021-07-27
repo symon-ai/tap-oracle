@@ -287,7 +287,7 @@ def discover_columns(connection, table_info, filter_schemas):
          'stream': table_name,
          'metadata': metadata.to_list(md),
          'tap_stream_id': table_schema + '-' + table_name,
-         'schema': schema,
+         'schema': schema.to_dict(),
          'column_order': [str(column) for column in column_schemas]
       }
       entries.append(entry)

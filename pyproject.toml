@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tap-oracle"
-version = "0.3.5"
+version = "0.3.6"
 description = "Singer.io tap for extracting data from Oracle"
 authors = ["Stitch"]
 homepage = "https://singer.io"
