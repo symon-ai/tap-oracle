@@ -283,7 +283,7 @@ def discover_columns(connection, table_info, filter_schemas):
                                    cols)
 
       entry = {
-         'table': table_name,
+         'table_name': table_name,
          'stream': table_name,
          'metadata': metadata.to_list(md),
          'tap_stream_id': table_schema + '-' + table_name,
@@ -397,15 +397,6 @@ def sync_method_for_streams(streams, state, default_replication_method):
    logical_streams = []
 
    for stream in streams:
-      old_properties = stream.schema.properties
-
-      # Sort the properties
-      new_properties = {}
-      for column in stream.order:
-         new_properties[column] = old_properties[column]
-
-      stream.schema.properties = new_properties
-
       stream_metadata = metadata.to_map(stream.metadata)
       replication_method = stream_metadata.get((), {}).get('replication-method', default_replication_method)
       replication_key = stream_metadata.get((), {}).get('replication-key')
@@ -568,14 +559,14 @@ def main_impl():
       # Sort the properties
       streams = args.properties['streams']
       for stream in streams:
-            new_properties = {}
-            old_properties = stream['schema']['properties']
-            order = stream['column_order']
+         new_properties = {}
+         old_properties = stream['schema']['properties']
+         order = stream['column_order']
 
-            for column in order:
-               new_properties[column] = old_properties[column]
+         for column in order:
+            new_properties[column] = old_properties[column]
 
-            stream['schema']['properties'] = new_properties
+         stream['schema']['properties'] = new_properties
 
       args.catalog = Catalog.from_dict(args.properties)
       
