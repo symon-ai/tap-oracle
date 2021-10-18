@@ -14,5 +14,5 @@ def open_connection(config):
     conn = cx_Oracle.connect(config["user"], config["password"], make_dsn(config))
     return conn
 
-def send_error(message):
+def raise_oracle_error(message):
     raise cx_Oracle.DatabaseError(message)

@@ -23,7 +23,7 @@ import tap_oracle.sync_strategies.log_miner as log_miner
 import tap_oracle.sync_strategies.full_table as full_table
 import tap_oracle.sync_strategies.incremental as incremental
 import tap_oracle.sync_strategies.common as common
-import cx_Oracle
+
 LOGGER = singer.get_logger()
 
 #LogMiner do not support LONG, LONG RAW, CLOB, BLOB, NCLOB, ADT, or COLLECTION datatypes.
@@ -345,10 +345,12 @@ def do_discovery(conn_config, filter_schemas):
         'is_view': True
      }
 
+   # If table_info is empty, we know that no table was found in the database.
+   # Send SYMON error that no table was found.
    if not table_info:
       cur.close()
       connection.close()
-      orc_db.send_error('SYM-12345: Coud not find a Dabase')
+      orc_db.raise_oracle_error('SYM-00001: No Table Found in the Database')
 
    catalog = discover_columns(connection, table_info, filter_schemas)
    LOGGER.info(catalog)
