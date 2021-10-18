@@ -329,7 +329,7 @@ def do_discovery(conn_config, filter_schemas):
       }
 
    if not table_info:
-      raise Exception({errorCode: '12345'})
+      raise Exception('cx_Oracle.DatabaseError: ORA-12345: No Database found')
 
    sql = filter_schemas_sql_clause("""
    SELECT owner, view_name
