@@ -15,4 +15,5 @@ def open_connection(config):
     return conn
 
 def raise_oracle_error(message):
+    # Raise database error because only database error messages are interpretted during discovery
     raise cx_Oracle.DatabaseError(message)
