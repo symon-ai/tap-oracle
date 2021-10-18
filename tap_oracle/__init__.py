@@ -344,8 +344,7 @@ def do_discovery(conn_config, filter_schemas):
         'is_view': True
      }
 
-   # If table_info is empty, we know that no table was found in the database.
-   # Send SYMON error that no table was found.
+   # If table_info is empty, send a SYMON error that no table was found with current input.
    if not table_info:
       cur.close()
       connection.close()
