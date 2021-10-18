@@ -17,4 +17,4 @@ def open_connection(config):
 def send_error(message):
     LOGGER.info("error: %s", message)
     cx_Oracle.close()
-    raise cx_Oracle.DatabaseError({_Error.code: 'ORA-12345', _Error.message: 'No Database found'})
+    raise cx_Oracle.DatabaseError({code: 'ORA-12345', message: 'No Database found'})
