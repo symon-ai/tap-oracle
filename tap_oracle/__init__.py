@@ -300,7 +300,6 @@ def dump_catalog(catalog):
 
 def do_discovery(conn_config, filter_schemas):
    LOGGER.info("starting discovery")
-   LOGGER.info(filter_schemas)
    connection = orc_db.open_connection(conn_config)
    cur = connection.cursor()
 
@@ -353,7 +352,6 @@ def do_discovery(conn_config, filter_schemas):
       orc_db.raise_oracle_error('SYM-00001: No Table Found in the Database')
 
    catalog = discover_columns(connection, table_info, filter_schemas)
-   LOGGER.info(catalog)
    json.dump(catalog, sys.stdout, indent=2)
    cur.close()
    connection.close()
