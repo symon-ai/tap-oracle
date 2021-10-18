@@ -23,6 +23,7 @@ import tap_oracle.sync_strategies.log_miner as log_miner
 import tap_oracle.sync_strategies.full_table as full_table
 import tap_oracle.sync_strategies.incremental as incremental
 import tap_oracle.sync_strategies.common as common
+import cx_Oracle
 LOGGER = singer.get_logger()
 
 #LogMiner do not support LONG, LONG RAW, CLOB, BLOB, NCLOB, ADT, or COLLECTION datatypes.
@@ -328,9 +329,6 @@ def do_discovery(conn_config, filter_schemas):
          'is_view': is_view
       }
 
-   if not table_info:
-      raise Exception('cx_Oracle.DatabaseError: ORA-12345: No Database found')
-
    sql = filter_schemas_sql_clause("""
    SELECT owner, view_name
    FROM sys.all_views
@@ -346,6 +344,9 @@ def do_discovery(conn_config, filter_schemas):
      table_info[schema][view_name] = {
         'is_view': True
      }
+
+   if not table_info:
+      orc_db.send_error("Could not find a database")
 
    catalog = discover_columns(connection, table_info, filter_schemas)
    LOGGER.info(catalog)
