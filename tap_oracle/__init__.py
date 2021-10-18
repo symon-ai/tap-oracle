@@ -328,6 +328,8 @@ def do_discovery(conn_config, filter_schemas):
          'is_view': is_view
       }
 
+   if not table_info:
+      raise Exception({errorCode: '12345'})
 
    sql = filter_schemas_sql_clause("""
    SELECT owner, view_name
