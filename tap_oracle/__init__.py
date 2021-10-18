@@ -348,7 +348,7 @@ def do_discovery(conn_config, filter_schemas):
    if not table_info:
       cur.close()
       connection.close()
-      orc_db.send_error('ORA-12345: Coud not find a Dabase')
+      orc_db.send_error('SYM-12345: Coud not find a Dabase')
 
    catalog = discover_columns(connection, table_info, filter_schemas)
    LOGGER.info(catalog)

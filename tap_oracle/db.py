@@ -15,5 +15,4 @@ def open_connection(config):
     return conn
 
 def send_error(message):
-    LOGGER.info("error: %s", message)
     raise cx_Oracle.DatabaseError(message)
