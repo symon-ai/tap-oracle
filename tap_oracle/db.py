@@ -13,7 +13,3 @@ def open_connection(config):
     LOGGER.info("dsn: %s", make_dsn(config))
     conn = cx_Oracle.connect(config["user"], config["password"], make_dsn(config))
     return conn
-
-def raise_oracle_error(message):
-    # Raise database error because only database error messages are interpretted during discovery
-    raise cx_Oracle.DatabaseError(message)
