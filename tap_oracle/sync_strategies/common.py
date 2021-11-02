@@ -21,8 +21,7 @@ def send_schema_message(stream, bookmark_properties):
     else:
         key_properties = s_md.get((), {}).get('table-key-properties')
 
-    schema_message = singer.SchemaMessage(stream=stream.stream,
-                                          tap_stream_id=stream.tap_stream_id,
+    schema_message = singer.SchemaMessage(stream=stream.tap_stream_id,
                                           schema=stream.schema.to_dict(),
                                           key_properties=key_properties,
                                           bookmark_properties=bookmark_properties)
