@@ -21,7 +21,7 @@ def send_schema_message(stream, bookmark_properties):
     else:
         key_properties = s_md.get((), {}).get('table-key-properties')
 
-    schema_message = singer.SchemaMessage(stream=stream.tap_stream_id,
+    schema_message = singer.SchemaMessage(stream=(stream.tap_stream_id or stream.stream),
                                           schema=stream.schema.to_dict(),
                                           key_properties=key_properties,
                                           bookmark_properties=bookmark_properties)
@@ -43,7 +43,7 @@ def row_to_singer_message(stream, row, version, columns, time_extracted):
     rec = dict(zip(columns, row_to_persist))
 
     return singer.RecordMessage(
-        stream=stream.tap_stream_id,
+        stream=(stream.tap_stream_id or stream.stream),
         record=rec,
         version=version,
         time_extracted=time_extracted)
