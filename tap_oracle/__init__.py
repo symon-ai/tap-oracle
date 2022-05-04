@@ -60,9 +60,6 @@ REQUIRED_CONFIG_KEYS = [
     'password'
 ]
 
-DEFAULT_NUMERIC_PRECISION=38
-DEFAULT_NUMERIC_SCALE=0
-
 def nullable_column(col_name, col_type, pks_for_table):
    if col_name in pks_for_table:
       return  [col_type]
@@ -70,29 +67,29 @@ def nullable_column(col_name, col_type, pks_for_table):
       return ['null', col_type]
 
 def schema_for_column(c, pks_for_table):
+   # Return Schema(None) to avoid calling lower() on a column with no datatype
+   if c.data_type is None:
+      LOGGER.info('Skipping column %s since it had no datatype', c.column_name)
+      return Schema(None)
+
    data_type = c.data_type.lower()
    result = Schema()
 
-   numeric_scale = c.numeric_scale or DEFAULT_NUMERIC_SCALE
-   numeric_precision = c.numeric_precision or DEFAULT_NUMERIC_PRECISION
+   # Scale of None indicates default of 6 digits
+   numeric_scale = c.numeric_scale
 
-   if data_type == 'number' and numeric_scale <= 0:
+   if data_type == 'number' and numeric_scale is not None and numeric_scale <= 0:
       result.type = nullable_column(c.column_name, 'integer', pks_for_table)
-      result.minimum = -1 * (10**numeric_precision - 1)
-      result.maximum = (10**numeric_precision - 1)
 
-      if numeric_scale < 0:
-         result.multipleOf = -10 * numeric_scale
       return result
 
    elif data_type == 'number':
-      result.type = nullable_column(c.column_name, 'number', pks_for_table)
+      # NB: Due to scale and precision variations in Oracle version, and
+      #     among numeric types, we're using a custom `singer.decimal` string
+      #     formatter for this, with no opinion on scale/precision.
+      result.type = nullable_column(c.column_name, 'string', pks_for_table)
+      result.format = 'singer.decimal'
 
-      result.exclusiveMaximum = True
-      result.maximum = 10 ** (numeric_precision - numeric_scale)
-      result.multipleOf = 10 ** (0 - numeric_scale)
-      result.exclusiveMinimum = True
-      result.minimum = -10 ** (numeric_precision - numeric_scale)
       return result
 
    elif data_type == 'date' or data_type.startswith("timestamp"):
@@ -117,17 +114,10 @@ def schema_for_column(c, pks_for_table):
    #instead they are represented as decimals, but despite this
    #it appears we can say nothing about their max or min
 
-   #"real"
-   elif data_type == 'float' and c.numeric_precision == 63:
-      result.type = nullable_column(c.column_name, 'number', pks_for_table)
-      result.multipleOf = 10 ** -18
-      return result
-
-   #"float", "double_precision",
+   #"float", "double_precision", "real"
    elif data_type in ['float', 'double_precision']:
-
-      result.type = nullable_column(c.column_name, 'number', pks_for_table)
-      result.multipleOf = 10 ** -38
+      result.type = nullable_column(c.column_name, 'string', pks_for_table)
+      result.format = 'singer.decimal'
       return result
 
    return Schema(None)
@@ -214,7 +204,8 @@ def produce_column_metadata(connection, table_info, table_schema, table_name, pk
 
    for c in cols:
       c_name = c.column_name
-      metadata.write(mdata, ('properties', c_name), 'sql-datatype', c.data_type)
+      # Write the data_type or "None" when the column has no datatype
+      metadata.write(mdata, ('properties', c_name), 'sql-datatype', (c.data_type or "None"))
       if column_schemas[c_name].type is None:
          mdata = metadata.write(mdata, ('properties', c_name), 'inclusion', 'unsupported')
          mdata = metadata.write(mdata, ('properties', c_name), 'selected-by-default', False)
