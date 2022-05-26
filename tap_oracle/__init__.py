@@ -122,6 +122,11 @@ def schema_for_column(c, pks_for_table):
       result.format = 'singer.decimal'
       return result
 
+   #interval types, just show the string version: INTERVAL YEAR(2) TO MONTH, INTERVAL DAY(2) TO SECOND(6)"
+   elif "INTERVAL" in data_type: 
+      result.type = nullable_column(c.column_name, 'string', pks_for_table)
+      return result
+
    return Schema(None)
 
 def filter_schemas_sql_clause(sql, binds_sql, owner_schema=None):
