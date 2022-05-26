@@ -72,6 +72,8 @@ def schema_for_column(c, pks_for_table):
       LOGGER.info('Skipping column %s since it had no datatype', c.column_name)
       return Schema(None)
 
+   LOGGER.info("data type: " + str(c.data_type))
+
    data_type = c.data_type.lower()
    result = Schema()
 
