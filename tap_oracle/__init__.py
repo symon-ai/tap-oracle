@@ -123,7 +123,7 @@ def schema_for_column(c, pks_for_table):
       return result
 
    #interval types, just show the string version: INTERVAL YEAR(2) TO MONTH, INTERVAL DAY(2) TO SECOND(6)"
-   elif 'INTERVAL' in data_type: 
+   elif 'interval' in data_type: 
       LOGGER.info("found interval type")
       result.type = nullable_column(c.column_name, 'string', pks_for_table)
       return result
