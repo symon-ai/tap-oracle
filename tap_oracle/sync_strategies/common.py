@@ -5,7 +5,6 @@ import decimal
 import datetime
 import dateutil.parser
 import cx_Oracle
-LOGGER = singer.get_logger()
 
 
 def should_sync_column(metadata, field_name):
