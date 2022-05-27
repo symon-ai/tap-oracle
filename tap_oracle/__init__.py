@@ -72,8 +72,6 @@ def schema_for_column(c, pks_for_table):
       LOGGER.info('Skipping column %s since it had no datatype', c.column_name)
       return Schema(None)
 
-   LOGGER.info("data type: " + str(c.data_type))
-
    data_type = c.data_type.lower()
    result = Schema()
 
@@ -124,10 +122,8 @@ def schema_for_column(c, pks_for_table):
 
    #interval types, just show the string version: INTERVAL YEAR(2) TO MONTH, INTERVAL DAY(2) TO SECOND(6)"
    elif 'interval' in data_type: 
-      LOGGER.info("found interval type")
       result.type = nullable_column(c.column_name, 'string', pks_for_table)
       result.format = 'symon.interval'
-      LOGGER.info(json.dumps(result))
       return result
 
    return Schema(None)

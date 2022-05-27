@@ -64,7 +64,6 @@ def OutputTypeHandler(cursor, name, defaultType, size, precision, scale):
 
 def prepare_columns_sql(stream, c):
     column_name = """ "{}" """.format(c)
-    LOGGER.info("checking col for: " + str(c) + " " + str(stream.schema.properties[c].format))
     if 'string' in stream.schema.properties[c].type and stream.schema.properties[c].format in ['date-time', 'symon.interval']:
         return "to_char({})".format(column_name)
 
