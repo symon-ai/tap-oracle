@@ -126,6 +126,7 @@ def schema_for_column(c, pks_for_table):
    elif 'interval' in data_type: 
       LOGGER.info("found interval type")
       result.type = nullable_column(c.column_name, 'string', pks_for_table)
+      result.format = 'symon.interval'
       return result
    LOGGER.info("IGNORING: " + str(data_type))
    intervalin = 'INTERVAL' in data_type
