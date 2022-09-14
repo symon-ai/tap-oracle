@@ -30,10 +30,29 @@ archive/redo log files are automatically deleted.
 
 Copyright &copy; 2018 Stitch
 
-## Install the tap
+### Install and Run
 
+Ensure poetry is installed on your machine. 
+
+- This command will return the installed version of poetry if it is installed.
 ```
-> pip install tap-oracle
+poetry --version
+```
+
+- If not, install poetry using the following commands (from https://python-poetry.org/docs/#installation):
+```
+curl -sSL https://install.python-poetry.org | python3 -
+PATH=~/.local/bin:$PATH
+```
+
+Within the `tap-oracle` directory, install dependencies:
+```
+poetry install
+```
+
+Then run the tap:
+```
+poetry run tap-oracle <options>
 ```
 
 ## Create a Config file
