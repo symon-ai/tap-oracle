@@ -70,7 +70,7 @@ def schema_for_column(c, pks_for_table):
    # Return Schema(None) to avoid calling lower() on a column with no datatype
    if c.data_type is None:
       LOGGER.info('Skipping column %s since it had no datatype', c.column_name)
-      return Schema(None)
+      return Schema(None, inclusion="unsupported", description="Unsupported column type")
 
    data_type = c.data_type.lower()
    result = Schema()
@@ -126,7 +126,7 @@ def schema_for_column(c, pks_for_table):
       result.format = 'symon.interval'
       return result
 
-   return Schema(None)
+   return Schema(None, inclusion="unsupported", description="Unsupported column type")
 
 def filter_schemas_sql_clause(sql, binds_sql, owner_schema=None):
    if binds_sql:
