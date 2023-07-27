@@ -15,13 +15,14 @@ def open_connection(config):
     try:
         conn = cx_Oracle.connect(config["user"], config["password"], make_dsn(config))
     except cx_Oracle.DatabaseError as e:
-        if 'ORA-01017' in str(e):
+        message = str(e)
+        if 'ORA-01017' in message:
             raise SymonException('The username and password provided are incorrect. Please try again.', 'odbc.AuthenticationFailed')
-        if 'ORA-12545' in str(e):
+        if 'ORA-12545' in message:
             raise SymonException(f'The host "{config["host"]}" was not found. Please check the host name and try again.', 'odbc.HostNotFound')
-        if 'ORA-12505' in str(e):
+        if 'ORA-12505' in message:
             raise SymonException(f'The SID "{config["sid"]}" does not exist. Please ensure it is correct.', 'odbc.DatabaseDoesNotExist')
-        if 'ORA-12170' in str(e):
+        if 'ORA-12170' in message:
             raise SymonException('Timed out connecting to database. Please ensure all the form values are correct.', 'odbc.ConnectionTimeout')
         raise
     return conn
