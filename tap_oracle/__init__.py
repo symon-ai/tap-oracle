@@ -4,6 +4,7 @@
 import datetime
 import pdb
 import json
+import traceback
 import os
 import sys
 import time
@@ -18,6 +19,7 @@ import singer.schema
 from singer import utils, metadata, get_bookmark
 from singer.schema import Schema
 from singer.catalog import Catalog, CatalogEntry
+from tap_oracle.symon_exception import SymonException
 import tap_oracle.db as orc_db
 import tap_oracle.sync_strategies.log_miner as log_miner
 import tap_oracle.sync_strategies.full_table as full_table
@@ -345,8 +347,7 @@ def do_discovery(conn_config, filter_schemas):
    if not table_info:
       cur.close()
       connection.close()
-      # Raise database error because only database error messages are interpretted during discovery
-      raise cx_Oracle.DatabaseError('SYM-00001: No Table Found in the Database')
+      raise SymonException(f'Sorry, we couldn\'t find any table in the database "{filter_schemas[0]}". Please check and try again.', 'odbc.TableNotFound')
 
    catalog = discover_columns(connection, table_info, filter_schemas)
    json.dump(catalog, sys.stdout, indent=2)
@@ -541,42 +542,75 @@ def do_sync(conn_config, catalog, default_replication_method, state):
    return state
 
 def main_impl():
-   args = utils.parse_args(REQUIRED_CONFIG_KEYS)
-   conn_config = {'user': args.config['user'],
-                  'password': args.config['password'],
-                  'host': args.config['host'],
-                  'port': args.config['port'],
-                  'sid':  args.config['sid']}
+   try:
+      # used for storing error info to write if error occurs
+      error_info = None
+      args = utils.parse_args(REQUIRED_CONFIG_KEYS)
+      conn_config = {'user': args.config['user'],
+                     'password': args.config['password'],
+                     'host': args.config['host'],
+                     'port': args.config['port'],
+                     'sid':  args.config['sid']}
 
-   if args.config.get('scn_window_size'):
-      log_miner.SCN_WINDOW_SIZE=int(args.config['scn_window_size'])
-   if args.discover:
-      filter_schemas_prop = args.config.get('filter_schemas')
-      filter_schemas = []
-      if args.config.get('filter_schemas'):
-         filter_schemas = args.config.get('filter_schemas').split(',')
-      do_discovery(conn_config, filter_schemas)
+      if args.config.get('scn_window_size'):
+         log_miner.SCN_WINDOW_SIZE=int(args.config['scn_window_size'])
+      if args.discover:
+         filter_schemas_prop = args.config.get('filter_schemas')
+         filter_schemas = []
+         if args.config.get('filter_schemas'):
+            filter_schemas = args.config.get('filter_schemas').split(',')
+         do_discovery(conn_config, filter_schemas)
 
-   elif args.properties:
-      state = args.state
+      elif args.properties:
+         state = args.state
 
-      # Sort the properties
-      streams = args.properties['streams']
-      for stream in streams:
-         new_properties = {}
-         old_properties = stream['schema']['properties']
-         order = stream['column_order']
+         # Sort the properties
+         streams = args.properties['streams']
+         for stream in streams:
+            new_properties = {}
+            old_properties = stream['schema']['properties']
+            order = stream['column_order']
 
-         for column in order:
-            new_properties[column] = old_properties[column]
+            for column in order:
+               new_properties[column] = old_properties[column]
 
-         stream['schema']['properties'] = new_properties
+            stream['schema']['properties'] = new_properties
 
-      args.catalog = Catalog.from_dict(args.properties)
-      
-      do_sync(conn_config, args.catalog, args.config.get('default_replication_method'), state)
-   else:
-      LOGGER.info("No properties were selected")
+         args.catalog = Catalog.from_dict(args.properties)
+         
+         do_sync(conn_config, args.catalog, args.config.get('default_replication_method'), state)
+      else:
+         LOGGER.info("No properties were selected")
+   except SymonException as e:
+      error_info = {
+         'message': str(e),
+         'code': e.code,
+         'traceback': traceback.format_exc()
+      }
+
+      if e.details is not None:
+         error_info['details'] = e.details
+      raise
+   except BaseException as e:
+      error_info = {
+         'message': str(e),
+         'traceback': traceback.format_exc()
+      }
+      raise
+   finally:
+      if error_info is not None:
+         error_file_path = args.config.get('error_file_path', None)
+         if error_file_path is not None:
+               try:
+                  with open(error_file_path, 'w', encoding='utf-8') as fp:
+                     json.dump(error_info, fp)
+               except:
+                  pass
+         # log error info as well in case file is corrupted
+         error_info_json = json.dumps(error_info)
+         error_start_marker = args.config.get('error_start_marker', '[tap_error_start]')
+         error_end_marker = args.config.get('error_end_marker', '[tap_error_end]')
+         LOGGER.info(f'{error_start_marker}{error_info_json}{error_end_marker}')
 
 def main():
     try:
