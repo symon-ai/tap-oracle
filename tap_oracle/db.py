@@ -23,9 +23,9 @@ def open_connection(config):
         if 'ORA-12505' in message:
             raise SymonException(f'The SID "{config["sid"]}" does not exist. Please ensure it is correct.', 'odbc.DatabaseDoesNotExist')
         if 'ORA-12170' in message:
-            raise SymonException('Timed out connecting to database. Please ensure all the form values are correct.', 'odbc.ConnectionTimeout')
+            raise SymonException('Timed out connecting to database. Please ensure all the connection form values are correct.', 'odbc.ConnectionTimeout')
         # ORA-12541: TNS:no listener, ORA-12543: TNS:destination host unreachable
         if 'ORA-12541' in message or 'ORA-12543' in message:
-            raise SymonException(f'Sorry, we couldn\'t connect to the host "{config["host"]}". Please ensure all the form values are correct.', 'odbc.ConnectionFailed')
+            raise SymonException(f'Sorry, we couldn\'t connect to the host "{config["host"]}". Please ensure all the connection form values are correct.', 'odbc.ConnectionFailed')
         raise
     return conn
