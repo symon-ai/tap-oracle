@@ -17,7 +17,7 @@ def open_connection(config):
     except cx_Oracle.DatabaseError as e:
         message = str(e)
         if 'ORA-01017' in message:
-            raise SymonException('The username and password provided are incorrect. Please try again.', 'odbc.AuthenticationFailed')
+            raise SymonException('The username or password provided is incorrect. Please check and try again.', 'odbc.AuthenticationFailed')
         if 'ORA-12545' in message:
             raise SymonException(f'The host "{config["host"]}" was not found. Please check the host name and try again.', 'odbc.HostNotFound')
         if 'ORA-12505' in message:
