@@ -28,6 +28,8 @@ import tap_oracle.sync_strategies.common as common
 import cx_Oracle
 LOGGER = singer.get_logger()
 
+cx_Oracle.init_oracle_client(lib_dir="$LD_LIBRARY_PATH")
+
 #LogMiner do not support LONG, LONG RAW, CLOB, BLOB, NCLOB, ADT, or COLLECTION datatypes.
 Column = collections.namedtuple('Column', [
     "table_schema",
