@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+cx-oracle = ">=6.1, <6.2"
+singer-python = ">=5.3.1, <5.4.0"
+strict-rfc3339 = ">=0.7, <0.8"
+
+[dev-packages]
+
+[requires]
+python_version = "~3.7"
